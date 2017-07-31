@@ -5,7 +5,9 @@ Self-Driving Car Engineer Nanodegree Program
 Model in this project is called `kinematic` The state can be represented using 6 values.
 `[x, y, psi, v, cte, eψ]`. Each of which can be described this way:
 ![car_states](./images/states.png)
+
 ![cte](./images/cte.png)
+
 ![epsi](./images/epsi.png)
 
 
@@ -45,7 +47,7 @@ For the purpose of waypoint fitting polynomial of 3rd order was used the reason 
 
 # Model Predictive Control with Latency
 
-I'm using `dt = 0.1` which is equal to latency (`100ms`) So in order to include the it into model I decided to skip the first value of actuators. Which is achieved in following way:
+I'm using `dt = 0.1` which is equal to latency (`100ms`) So in order to include it into model I decided to skip the first value of actuators. Which is achieved in following way:
 
 
         int latency_index = 0.1 / dt;
