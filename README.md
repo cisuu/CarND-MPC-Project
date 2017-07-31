@@ -1,6 +1,58 @@
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
 
+# The model.
+Model in this project is called `kinematic` The state can be represented using 6 values.
+`[x, y, psi, v, cte, eψ]`. Each of which can be described this way:
+![car_states](./images/states.png)
+![cte](./images/cte.png)
+![epsi](./images/epsi.png)
+
+
+There are few special values:
+
+`Lf` - which measures the distance between the front of the vehicle and its center of gravity.
+
+`delta` - which is first of actuators and is responsible for steering angle
+
+`a` - which is the second of actuators responsible for acceleration
+
+# Timestep Length and Elapsed Duration (N & dt)
+
+In my project I ended up with values:
+
+`N = 10`
+`dt = 0.1`
+
+I started with the ones which where presented in lab `N=25 dt=0.05` and moved down to shown before. With my values the Horizont is set to `1 second` which gave me good results as it should not be too big. Described in lectures as max few seconds. We need to remember that too big values of `N` would significantly increase the cost of computations and too big values of `dt` would lead to discretization error.
+
+# Polynomial Fitting and MPC Preprocessing
+
+For the purpose of waypoint fitting polynomial of 3rd order was used the reason for this is that this degree is enough to fit most roads. Important fact is that all computations are held in car coordinate system. To achieve this following transformation was used:
+
+
+          int size = j[1]["ptsx"].size();
+          Eigen::VectorXd ptsx_car(size);
+          Eigen::VectorXd ptsy_car(size);
+
+          for (int i = 0; i < size; i++) {
+            double x = ptsx[i] - px;
+            double y = ptsy[i] - py;
+
+            ptsx_car[i] = x * cos(-psi) - y * sin(-psi);
+            ptsy_car[i] = x * sin(-psi) + y * cos(-psi);
+          };
+
+# Model Predictive Control with Latency
+
+I'm using `dt = 0.1` which is equal to latency (`100ms`) So in order to include the it into model I decided to skip the first value of actuators. Which is achieved in following way:
+
+
+        int latency_index = 0.1 / dt;
+
+        result.push_back(solution.x[delta_start + latency_index]);
+        result.push_back(solution.x[a_start + latency_index]);
+
 ---
 
 ## Dependencies
@@ -19,7 +71,7 @@ Self-Driving Car Engineer Nanodegree Program
   * Run either `install-mac.sh` or `install-ubuntu.sh`.
   * If you install from source, checkout to commit `e94b6e1`, i.e.
     ```
-    git clone https://github.com/uWebSockets/uWebSockets 
+    git clone https://github.com/uWebSockets/uWebSockets
     cd uWebSockets
     git checkout e94b6e1
     ```
@@ -42,7 +94,7 @@ Self-Driving Car Engineer Nanodegree Program
        per this [forum post](https://discussions.udacity.com/t/incorrect-checksum-for-freed-object/313433/19).
   * Linux
     * You will need a version of Ipopt 3.12.1 or higher. The version available through `apt-get` is 3.11.x. If you can get that version to work great but if not there's a script `install_ipopt.sh` that will install Ipopt. You just need to download the source from the Ipopt [releases page](https://www.coin-or.org/download/source/Ipopt/) or the [Github releases](https://github.com/coin-or/Ipopt/releases) page.
-    * Then call `install_ipopt.sh` with the source directory as the first argument, ex: `sudo bash install_ipopt.sh Ipopt-3.12.1`. 
+    * Then call `install_ipopt.sh` with the source directory as the first argument, ex: `sudo bash install_ipopt.sh Ipopt-3.12.1`.
   * Windows: TODO. If you can use the Linux subsystem and follow the Linux instructions.
 * [CppAD](https://www.coin-or.org/CppAD/)
   * Mac: `brew install cppad`
